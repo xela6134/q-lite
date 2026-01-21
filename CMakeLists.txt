@@ -1,37 +1,29 @@
 cmake_minimum_required(VERSION 3.14)
 project(qlite VERSION 0.1.0 LANGUAGES CXX)
 
-# Force C++20 (need for std::span, std::variant and stuff)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# Performance Flags
-# Use best instructions available on current machine
+include(FetchContent)
+
+# Test Setup
+# FetchContent_Declare(
+#   googletest
+#   URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
+# )
+
+# Only force shared CRT if using Visual Studio (MSVC)
 if(MSVC)
-    add_compile_options(/W4 /arch:AVX2 /O2)
+    add_compile_options(/O2 /arch:AVX2)
 else()
-    add_compile_options(-Wall -Wextra -march=native -O3)
+    add_compile_options(-O3 -march=native -Wall -Wextra)
 endif()
 
-# Core Engine (database) is separate from CLI
-# This does all the calculations, sums, etc
-add_library(qlite_engine STATIC
-    src/engine.cpp
-    src/memory.cpp
-)
+add_executable(qlite src/main.cpp)
 
-# Header file location
-target_include_directories(qlite_engine PUBLIC 
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>
-)
+# Main source directory
+# add_subdirectory(src)
 
-# Executable CLI
-add_executable(qlite main.cpp)
-
-# Link executable & engine
-target_link_libraries(qlite PRIVATE qlite_engine)
-
-# TODO: Add test support (Google Test)
-# TODO: Do benchmarking (Google Benchmark)
+# Tests
+# enable_testing()
