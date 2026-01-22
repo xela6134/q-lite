@@ -20,7 +20,7 @@ else()
     add_compile_options(-O3 -march=native -Wall -Wextra)
 endif()
 
-add_executable(qlite src/main.cpp)
+add_subdirectory(src)
 
 # Main source directory
 # add_subdirectory(src)
