@@ -14,7 +14,7 @@ A C++20 vectorized, column-oriented database engine inspired by kdb+. Designed f
 
 The system is built on a custom type system and memory manager to minimize reliance on STL in hot paths.
 
-**K-Object Model**: A lightweight, unified tagged-union structure that represents all data types (atoms, lists, dictionaries), enabling dynamic typing without the overhead of virtual function tables.
+**K-Object Model**: A lightweight, unified tagged-union structure that represents all data types (atoms, lists, dictionaries), enabling dynamic typing without the overhead of virtual function tables, fits in perfectly in 64-bit (or even 32-bit systems)
 
 **Memory Pool**: A custom slab allocator that manages raw memory arenas, ensuring data locality and reducing OS-level allocation overhead during query execution.
 
@@ -47,7 +47,6 @@ make
 ```bash
 ./src/qlite
 ```
-The server will start on port `8080`.
 
 ### Run Tests
 ```bash
