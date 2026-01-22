@@ -2,7 +2,7 @@
 
 int main() {
     std::cout << "Initializing q-lite..." << std::endl;
-
+    // PART 1: Basic functionality
     // Create a vector of 10 integers (Type KI)
     int64_t N = 10;
     K* vec = ktn(KI, N);
@@ -11,29 +11,41 @@ int main() {
         vec->I[i] = i * 10;
     }
 
-    // Inspect the object
+    // Inspect & show the object
     show(vec);
-    
-    // Clean up
     r0(vec);
 
-    K* val1 = new K();
-    val1->t = KI;
-    val1->i = 42;
+    // PART 2: Memory alignment
 
-    std::cout << "Value 1 (Integer): " << val1->i << std::endl;
+    // Working memory alignment
+    std::cout << "\nWorking Memory Alignment:" << std::endl;
+    for (int i = 0; i < 5; ++i) {
+        K* z = ktn(KI, 0);
 
-    K* val2 = new K();
-    val2->t = KF;
-    val2->f = 3.14159; 
-    
-    std::cout << "Value 2 (Float): " << val2->f << std::endl;
+        std::cout << "Object " << i << " Address: 0x"
+            << std::hex << (uintptr_t)z << std::dec
+            << " (Offset: " << ((uintptr_t)z % 1000) << ")"
+            << std::endl;
+        
+        r0(z);
+    }
 
-    // Demonstrate type confusion (unsafe)
-    std::cout << "Reading Integer as Float (Garbage): " << val1->f << std::endl;
+    // Bad memory alignment
+    std::cout << "\nBad Memory Alignment:" << std::endl;
+    std::vector<K*> heap_ptrs;
 
-    delete val1;
-    delete val2;
+    for (int i = 0; i < 5; ++i) {
+        heap_ptrs.push_back(new K());
+    }
+
+    for (int i = 0; i < 5; ++i) {
+        std::cout << "Object " << i << " Address: 0x" 
+                << std::hex << (uintptr_t)heap_ptrs[i] << std::dec 
+                << " (Offset: " << ((uintptr_t)heap_ptrs[i] % 1000) << ")"
+                << std::endl;
+    }
+
+    for (K* k : heap_ptrs) delete k;
 
     return 0;
 }
