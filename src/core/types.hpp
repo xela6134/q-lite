@@ -18,7 +18,7 @@ struct K {
     int8_t t;   // type
     int8_t a;   // attributes (sorted, etc.)
     int16_t r;  // ref count
-    int64_t n;  // number of elements (for vectors)
+    int32_t n;  // number of elements (for vectors)
 
     /**
      * Payload
