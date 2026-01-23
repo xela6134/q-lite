@@ -13,17 +13,16 @@ constexpr int8_t KB = 1;  // boolean
 constexpr int8_t KI = 4;  // integer (64-bit)
 constexpr int8_t KF = 9;  // float (double)
 
+// 16 byte struct
 struct K {
-    // Headers
+    // Headers: 1 + 1 + 2 + 4 = 8 bytes
     int8_t t;   // type
     int8_t a;   // attributes (sorted, etc.)
     int16_t r;  // ref count
     int32_t n;  // number of elements (for vectors)
 
     /**
-     * Payload
-     * 
-     * Uses an anonymous union
+     * Payload: uses an anonymous union (8 bytes max)
      * Normally, to handle int, float, etc in one object, we need to use inheritance or std::variant.
      * This creates vtable overhead -> higher latency & memory usage.
      */
