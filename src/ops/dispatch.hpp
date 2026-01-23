@@ -2,8 +2,8 @@
 
 #include "../core/types.hpp"
 
-void add_I(int64_t* res, const int64_t* a, const int64_t* b, int64_t n);
-void add_F(double* res, const double* a, const double* b, int64_t n);
+void add_I(int64_t* res, const int64_t* a, const int64_t* b, int32_t n);
+void add_F(double* res, const double* a, const double* b, int32_t n);
 
 inline K* add(K* a, K* b) {
     // validation

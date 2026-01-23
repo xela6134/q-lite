@@ -5,7 +5,7 @@
 
 // K To Number (length)
 // Allocates contiguous memory: [K Struct] -> [Raw Data]
-K* ktn(int8_t type, int64_t len) {
+K* ktn(int8_t type, int32_t len) {
     void* memory = pool.alloc(sizeof(K));
 
     K* z = new(memory) K();

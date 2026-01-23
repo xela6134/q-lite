@@ -5,7 +5,7 @@ int main() {
     std::cout << "Initializing q-lite..." << std::endl;
     // PART 1: Basic functionality
     // Create a vector of 10 integers (Type KI)
-    int64_t N = 10;
+    int32_t N = 10;
     K* vec = ktn(KI, N);
 
     for (int i = 0; i < N; ++i) {
@@ -48,27 +48,7 @@ int main() {
 
     for (K* k : heap_ptrs) delete k;
 
-    // PART 3: Vectorised addition
-
-    N = 100;
-
-    K* col_A = ktn(KI, N);
-    K* col_B = ktn(KI, N);
-
-    for (int i = 0; i < N; ++i) {
-        col_A->I[i] = i;
-        col_B->I[i] = 10;
-    }
-
-    K* result = add(col_A, col_B);
-
-    std::cout << "A: "; show(col_A);
-    std::cout << "B: "; show(col_B);
-    std::cout << "Result (A + B): "; show(result);
-
-    r0(col_A);
-    r0(col_B);
-    r0(result);
+    // PART 3 in separate file (vectorised.cpp)
 
     return 0;
 }

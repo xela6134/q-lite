@@ -36,6 +36,6 @@ struct K {
     };
 };
 
-K* ktn(int8_t type, int64_t len);
+K* ktn(int8_t type, int32_t len);
 void r0(K* k);
 void show(K* k);
