@@ -2,6 +2,8 @@
 #include "ops/dispatch.hpp"
 
 int main() {
+    // Confirms this code is hyperoptimised with -O3 flag
+
     int32_t N = 100;
 
     K* col_A = ktn(KI, N);
