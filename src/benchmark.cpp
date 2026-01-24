@@ -38,7 +38,7 @@ int main() {
 
         auto t2 = TIME_NOW;
         std::cout << "q-lite time: " << DURATION(t1, t2) << " us" << std::endl;
-        
+
         r0(k1); r0(k2); r0(res);
     }
 

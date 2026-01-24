@@ -4,8 +4,10 @@
 #include <cstdlib>
 #include <iostream>
 
-// Simple Arena Allocator
-// Big chunk of memory we can use
+/**
+ * Simple area allocator
+ * Big chunk of memory we can use
+ */
 class MemoryPool {
     struct Block {
         char* data;
@@ -33,16 +35,22 @@ public:
     }
 
     void* alloc(size_t size) {
-        // Alignment (8 bytes)
-        size_t padding = (8 - (blocks[current_block_idx].used % 8)) % 8;
-        size += padding;
+        // Add padding every single time to ensure 8-byte alignment
+        // e.g. [char] [ ] [ ] [ ] [ ] [ ] [ ] [ ] -> 1 byte char, 7 bytes padding
+        size_t current_addr = (size_t)(blocks[current_block_idx].data + blocks[current_block_idx].used);
+        size_t padding = (0 - current_addr) & 7; // modulo 8 operation
 
-        if (blocks[current_block_idx].used + size > BLOCK_SIZE) {
+        // Check capacity including the padding we need to skip
+        if (blocks[current_block_idx].used + padding + size > BLOCK_SIZE) {
             allocate_new_block();
+            padding = 0; 
         }
 
-        char* ptr = blocks[current_block_idx].data + blocks[current_block_idx].used;
-        blocks[current_block_idx].used += size;
+        // Move the pointer past padding
+        char* ptr = blocks[current_block_idx].data + blocks[current_block_idx].used + padding;
+        
+        // Update usage
+        blocks[current_block_idx].used += (padding + size);
         
         return (void*)ptr;
     }
