@@ -4,7 +4,8 @@
 K* distinct(K* list) {
     if (list->t != KI) return nullptr;
 
-    IntHashMap map(1024);
+    // 4096 is a very fast capacity from benchmarks
+    IntHashMap map(4096);
 
     for (int64_t i = 0; i < list->n; ++i) {
         map.get(list->I[i]);
