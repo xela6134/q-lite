@@ -8,6 +8,7 @@
  * Simple area allocator, big chunk of memory we can use
  * Advantage: 64-bit CPU alignment guaranteed
  * Tradeoff: More internal fragmentation for memory
+ * NOT a static heap-free memory allocator
  */
 class MemoryPool {
     struct Block {

@@ -6,9 +6,9 @@ A C++20 vectorised, column-oriented database engine inspired by kdb+. Designed f
 
 | Metric | q-lite Implementation | Standard STL | Improvement |
 | --- | --- | --- | --- |
-| **Object Allocation** | Bump/Arena Allocator | `new` / `malloc` | **~12x Faster** (Sequential Addresses) |
+| **Object Allocation** | Bump/Arena Allocator | `new` / `malloc` | **~12x Faster** |
 | **Math Ops** | AVX2 Vectorised Kernels | Scalar Iteration | **~3-4x Faster** |
-| **Aggregation** | Custom Hash Map | `std::unordered_map` | **~2-3x Faster** (No Pointers) |
+| **Aggregation** | Custom Hash Map | `std::unordered_map` | **~2-3x Faster** |
 
 ## Architecture
 
@@ -21,7 +21,7 @@ Replaces traditional C++ polymorphism (vtables) with a Tagged Union system. All 
 
 ### 2. Custom Memory Management (`src/memory`)
 
-Uses a **Slab/Arena Allocator** instead of the general-purpose heap.
+Uses a Arena Allocator instead of the general-purpose heap.
 
 - **Spatial Locality:** Objects are allocated sequentially in contiguous RAM blocks, maximizing L1/L2 cache hits during table scans.
 - **Zero-Cost Deallocation:** Entire arenas are reset instantly rather than freeing objects individually.

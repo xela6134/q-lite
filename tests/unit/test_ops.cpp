@@ -3,7 +3,7 @@
 #include "../../src/ops/dispatch.hpp"
 
 TEST(OpsTest, VectorizedAdd) {
-    int64_t N = 4096; // Large enough to trigger AVX loops
+    int32_t N = 4096; // Large enough to trigger AVX loops
     K* a = ktn(KI, N);
     K* b = ktn(KI, N);
 
