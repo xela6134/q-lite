@@ -19,7 +19,6 @@ TEST(CoreTest, PoolAllocatorSequentiality) {
     uintptr_t p2 = (uintptr_t)k2;
     
     // Expect p1 and p2 to be close (size of K is 32 bytes + padding)
-    // If it was new(), distance could be huge
     long diff = p2 - p1;
     EXPECT_LT(diff, 64);
     EXPECT_GT(diff, 0);

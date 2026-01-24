@@ -6,13 +6,14 @@
 #include "core/types.hpp"
 #include "ops/dispatch.hpp"
 #include "engine/hashmap.hpp"
+#include "memory/pool.hpp"
 
 using namespace std::chrono;
 #define TIME_NOW high_resolution_clock::now()
 #define DURATION(start, end) duration_cast<microseconds>(end - start).count()
 
 int main() {
-    int64_t N = 10000000; // 10 Million rows (~80MB)
+    int32_t N = 10000000; // 10 Million rows (~80MB)
     
     // Benchmark 1: std::vector addition (time: 127607 us)
     {
@@ -37,10 +38,12 @@ int main() {
         K* res = add(k1, k2);
 
         auto t2 = TIME_NOW;
-        std::cout << "q-lite time: " << DURATION(t1, t2) << " us" << std::endl;
+        std::cout << "K addition time: " << DURATION(t1, t2) << " us" << std::endl;
 
         r0(k1); r0(k2); r0(res);
     }
+
+    std::cout << std::endl;
 
     K* data = ktn(KI, N);
     for (int i = 0; i < N; ++i) data->I[i] = i % 1000;
@@ -51,7 +54,7 @@ int main() {
         std::unordered_set<int64_t> s;
         for (int i = 0; i < N; ++i) s.insert(data->I[i]);
         auto t2 = TIME_NOW;
-        std::cout << "std::unordered_set: " << DURATION(t1, t2) << " us" << std::endl;
+        std::cout << "std::unordered_set time: " << DURATION(t1, t2) << " us" << std::endl;
     }
 
     // Benchmark 4: std::unordered_map (time: 24456 us)
@@ -60,7 +63,7 @@ int main() {
         std::unordered_map<int64_t, int64_t> m;
         for (int i = 0; i < N; ++i) m[data->I[i]] = 1;
         auto t2 = TIME_NOW;
-        std::cout << "std::unordered_map: " << DURATION(t1, t2) << " us" << std::endl;
+        std::cout << "std::unordered_map time: " << DURATION(t1, t2) << " us" << std::endl;
     }
 
     // Benchmark 5: K distinct (time: 8386 us)
@@ -68,9 +71,53 @@ int main() {
         auto t1 = TIME_NOW;
         K* groups = distinct(data);
         auto t2 = TIME_NOW;
-        std::cout << "q-lite time: " << DURATION(t1, t2) << " us" << std::endl;
+        std::cout << "K distinct time: " << DURATION(t1, t2) << " us" << std::endl;
         r0(groups);
     }
+
+    std::cout << std::endl;
+
+    // Benchmark 6: Standard C++ heap (time: 241863 us)
+    {
+        std::vector<K*> v; 
+        v.reserve(N);
+
+        auto t1 = TIME_NOW;
+
+        for (int i = 0; i < N; ++i) {
+            K* k = new K(); // Standard malloc
+            k->t = KI;
+            k->i = i;
+            v.push_back(k);
+        }
+
+        auto t2 = TIME_NOW;
+        std::cout << "new K() time: " << DURATION(t1, t2) << " us" << std::endl;
+
+        for (K* k : v) delete k; 
+    }
+
+    // Benchmark 7: Custom memory pool (time: 18902 us)
+    {
+        std::vector<K*> v;
+        v.reserve(N);
+
+        auto t1 = TIME_NOW;
+
+        for (int i = 0; i < N; ++i) {
+            // Direct Pool Access (Simulating an 'Atom' factory)
+            // This is just a pointer increment. Extremely fast.
+            K* k = (K*) pool.alloc(sizeof(K)); 
+            k->t = -KI;
+            k->i = i;
+            v.push_back(k);
+        }
+
+        auto t2 = TIME_NOW;
+        std::cout << "K arena allocator time: " << DURATION(t1, t2) << " us" << std::endl;
+    }
+
+    r0(data);
 
     return 0;
 }

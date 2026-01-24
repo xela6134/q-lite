@@ -1,4 +1,4 @@
-# tests/CMakeLists.txt
+# tests CMakeLists.txt
 
 add_executable(unit_tests
     unit/test_core.cpp

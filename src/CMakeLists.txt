@@ -1,4 +1,5 @@
-# qlite/src/CMakeLists.txt
+# src CMakeLists.txt
+
 add_library(qlite_core
     core/object.cpp
     ops/math.cpp
