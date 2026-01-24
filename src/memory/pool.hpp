@@ -5,8 +5,9 @@
 #include <iostream>
 
 /**
- * Simple area allocator
- * Big chunk of memory we can use
+ * Simple area allocator, big chunk of memory we can use
+ * Advantage: 64-bit CPU alignment guaranteed
+ * Tradeoff: More internal fragmentation for memory
  */
 class MemoryPool {
     struct Block {
@@ -35,7 +36,7 @@ public:
     }
 
     void* alloc(size_t size) {
-        // Add padding every single time to ensure 8-byte alignment
+        // Add padding every single time to ensure 8-byte alignment (64-bit systems)
         // e.g. [char] [ ] [ ] [ ] [ ] [ ] [ ] [ ] -> 1 byte char, 7 bytes padding
         size_t current_addr = (size_t)(blocks[current_block_idx].data + blocks[current_block_idx].used);
         size_t padding = (0 - current_addr) & 7; // modulo 8 operation
