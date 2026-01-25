@@ -7,6 +7,7 @@ TEST(CoreTest, KtnAllocatesCorrectType) {
     ASSERT_EQ(k->t, KI);
     ASSERT_EQ(k->n, 10);
     ASSERT_NE(k->I, nullptr); // Payload exists
+
     r0(k);
 }
 

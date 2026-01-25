@@ -13,35 +13,43 @@ using namespace std::chrono;
 #define DURATION(start, end) duration_cast<microseconds>(end - start).count()
 
 int main() {
-    int32_t N = 10000000; // 10 Million rows (~80MB)
+    int32_t N = 5000000; // 50 Million rows (~400MB)
     
-    // Benchmark 1: std::vector addition (time: 127607 us)
+    // Benchmark 1: std::vector addition (time: 9049 us)
     {
-        auto t1 = TIME_NOW;
-        
         std::vector<int64_t> v1(N, 1);
         std::vector<int64_t> v2(N, 2);
-        std::vector<int64_t> res(N);
-        
+        std::vector<int64_t> res(N, 0);
+
+        auto t1 = TIME_NOW;
         for (size_t i = 0; i < static_cast<size_t>(N); ++i) res[i] = v1[i] + v2[i];
-        
         auto t2 = TIME_NOW;
+
         std::cout << "std::vector time: " << DURATION(t1, t2) << " us" << std::endl;
     }
 
-    // Benchmark 2: K addition (time: 38778 us)
+    // Benchmark 2: K addition (time: 24718 us)
     {
-        auto t1 = TIME_NOW;
-        
-        K* k1 = ktn(KI, N); // No zeroing
+        K* k1 = ktn(KI, N);
         K* k2 = ktn(KI, N);
-        K* res = add(k1, k2);
+        K* res = ktn(KI, N); // Just gives the memory to use and doesn't actually load it on RAM
 
+        for (int i = 0; i < N; ++i) {
+            k1->I[i] = 1;
+            k2->I[i] = 2;
+            res->I[i] = 0; // Fun fact: Not having this line causes extreme system overhead (lazy allocation -> lots of page faults)
+        }
+
+        auto t1 = TIME_NOW;
+        add_I(res->I, k1->I, k2->I, N);
         auto t2 = TIME_NOW;
+
         std::cout << "K addition time: " << DURATION(t1, t2) << " us" << std::endl;
 
         r0(k1); r0(k2); r0(res);
     }
+
+    N = 10000000; 
 
     std::cout << std::endl;
 

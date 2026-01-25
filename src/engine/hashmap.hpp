@@ -83,7 +83,7 @@ public:
             idx = (idx + 1) & mask;
         }
     }
-    
+
     std::vector<int64_t> keys() {
         std::vector<int64_t> k;
         k.reserve(size);

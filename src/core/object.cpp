@@ -8,13 +8,27 @@
 K* ktn(int8_t type, int32_t len) {
     void* memory = pool.alloc(sizeof(K));
 
+    // Placement New: Skips allocation (finding free memory), just constructs in given memory
+    // Normal malloc is allocate + construct. Different from `new K()`
     K* z = new(memory) K();
     z->t = type;
     z->n = len;
     z->r = 0;
 
-    if (type == KI) z->I = new int64_t[len]; 
-    else if (type == KF) z->F = new double[len];
+    // Memory alignment for payload as 64 bytes
+    // Modern CPU caches (L1 ~ L3) are all aligned in 64 bytes
+
+    size_t bytes = len * (type == KI ? 8 : 8);
+    size_t aligned_bytes = (bytes + 63) & ~63;
+
+    if (type == KI) {
+        z->I = (int64_t*) aligned_alloc(64, aligned_bytes);
+    } else if (type == KF) {
+        z->F = (double*) aligned_alloc(64, aligned_bytes);
+    }
+
+    // if (type == KI) z->I = new int64_t[len];
+    // else if (type == KF) z->F = new double[len];
 
     return z;
 }
