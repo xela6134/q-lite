@@ -13,22 +13,24 @@ using namespace std::chrono;
 #define DURATION(start, end) duration_cast<microseconds>(end - start).count()
 
 int main() {
-    int32_t N = 5000000; // 50 Million rows (~400MB)
-    
-    // Benchmark 1: std::vector addition (time: 9049 us)
+    int32_t N = 50000000; // 50 Million rows (~400 MB)
+
+    // Benchmark 1: std::vector addition (time: 50939 us)
     {
         std::vector<int64_t> v1(N, 1);
         std::vector<int64_t> v2(N, 2);
         std::vector<int64_t> res(N, 0);
 
+        size_t sizeN = static_cast<size_t>(N);
+
         auto t1 = TIME_NOW;
-        for (size_t i = 0; i < static_cast<size_t>(N); ++i) res[i] = v1[i] + v2[i];
+        for (size_t i = 0; i < sizeN; ++i) res[i] = v1[i] + v2[i];
         auto t2 = TIME_NOW;
 
         std::cout << "std::vector time: " << DURATION(t1, t2) << " us" << std::endl;
     }
 
-    // Benchmark 2: K addition (time: 24718 us)
+    // Benchmark 2: K addition (time: 34240 us)
     {
         K* k1 = ktn(KI, N);
         K* k2 = ktn(KI, N);
@@ -49,14 +51,14 @@ int main() {
         r0(k1); r0(k2); r0(res);
     }
 
-    N = 10000000; 
-
     std::cout << std::endl;
+
+    N = 1000000; // 10 Million rows (~80 MB)
 
     K* data = ktn(KI, N);
     for (int i = 0; i < N; ++i) data->I[i] = i % 1000;
 
-    // Benchmark 3: std::unordered_set (time: 26388 us)
+    // Benchmark 3: std::unordered_set (time: 2868 us)
     {
         auto t1 = TIME_NOW;
         std::unordered_set<int64_t> s;
@@ -65,7 +67,7 @@ int main() {
         std::cout << "std::unordered_set time: " << DURATION(t1, t2) << " us" << std::endl;
     }
 
-    // Benchmark 4: std::unordered_map (time: 24456 us)
+    // Benchmark 4: std::unordered_map (time: 2549 us)
     {
         auto t1 = TIME_NOW;
         std::unordered_map<int64_t, int64_t> m;
@@ -74,7 +76,7 @@ int main() {
         std::cout << "std::unordered_map time: " << DURATION(t1, t2) << " us" << std::endl;
     }
 
-    // Benchmark 5: K distinct (time: 8386 us)
+    // Benchmark 5: K distinct (time: 905 us)
     {
         auto t1 = TIME_NOW;
         K* groups = distinct(data);
@@ -85,7 +87,7 @@ int main() {
 
     std::cout << std::endl;
 
-    // Benchmark 6: Standard C++ heap (time: 241863 us)
+    // Benchmark 6: Standard C++ heap (time: 21587 us)
     {
         std::vector<K*> v; 
         v.reserve(N);
@@ -105,7 +107,7 @@ int main() {
         for (K* k : v) delete k; 
     }
 
-    // Benchmark 7: Custom memory pool (time: 18902 us)
+    // Benchmark 7: Custom memory pool (time: 2167 us)
     {
         std::vector<K*> v;
         v.reserve(N);

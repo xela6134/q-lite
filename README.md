@@ -6,9 +6,9 @@ A C++20 vectorised, column-oriented database engine inspired by kdb+. Designed f
 
 | Metric | q-lite Implementation | Standard STL | Improvement |
 | --- | --- | --- | --- |
-| **Object Allocation** | Bump/Arena Allocator | `new` / `malloc` | **~12x Faster** |
-| **Math Ops** | AVX2 Vectorised Kernels | Scalar Iteration | **~3-4x Faster** |
-| **Aggregation** | Custom Hash Map | `std::unordered_map` | **~2-3x Faster** |
+| **Object Allocation** | Bump/Arena Allocator | `new` / `malloc` | **~1200% Faster** |
+| **Aggregation** | Custom Hash Map | `std::unordered_map` | **~300% Faster** |
+| **Math Ops** | AVX2 Vectorised Kernels | `std::vector` | **~50% Faster** |
 
 ## Architecture
 

@@ -6,6 +6,7 @@
 // K To Number (length)
 // Allocates contiguous memory: [K Struct] -> [Raw Data]
 K* ktn(int8_t type, int32_t len) {
+    // Memory pool allocation
     void* memory = pool.alloc(sizeof(K));
 
     // Placement New: Skips allocation (finding free memory), just constructs in given memory
