@@ -74,3 +74,8 @@ ctest
 
 - Make it into a REPL (with Q)
 - `asof` join (time-series join)
+
+| time | sym | price | size | 
+| :--- | :--- | :--- | :--- | 
+| 09:30 | AAPL | 150.0 | 100 | 
+| 09:31 | GOOG | 200.0 | 500 |

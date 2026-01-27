@@ -20,14 +20,14 @@ inline K* add(K* a, K* b) {
                 add_I(r->I, a->I, b->I, a->n);
             }
             break;
-            
+
         case KF: // float
             if (b->t == KF) {
                 add_F(r->F, a->F, b->F, a->n);
             }
             break;
         
-        // Add more later
+        // TODO: Add more later
 
         default:
             // Handle error or other types

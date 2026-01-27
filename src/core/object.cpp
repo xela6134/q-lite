@@ -1,44 +1,93 @@
 #include <new>
-
+#include <cstdlib> // For aligned_alloc, free
 #include "../memory/pool.hpp"
 #include "types.hpp"
 
 // K To Number (length)
 // Allocates contiguous memory: [K Struct] -> [Raw Data]
 K* ktn(int8_t type, int32_t len) {
-    // Memory pool allocation
+    // 1. Allocate the Header (from Pool)
     void* memory = pool.alloc(sizeof(K));
-
-    // Placement New: Skips allocation (finding free memory), just constructs in given memory
-    // Normal malloc is allocate + construct. Different from `new K()`
     K* z = new(memory) K();
     z->t = type;
     z->n = len;
     z->r = 0;
 
-    // Memory alignment for payload as 64 bytes
-    // Modern CPU caches (L1 ~ L3) are all aligned in 64 bytes
-
-    size_t bytes = len * (type == KI ? 8 : 8);
+    // Calculate payload size
+    size_t bytes = len * 8;
     size_t aligned_bytes = (bytes + 63) & ~63;
 
-    if (type == KI) {
-        z->I = (int64_t*) aligned_alloc(64, aligned_bytes);
-    } else if (type == KF) {
-        z->F = (double*) aligned_alloc(64, aligned_bytes);
+    // Allocate aligned payload
+    if (len > 0) {
+        // Use aligned_alloc for EVERYTHING to guarantee cache-line alignment
+        void* ptr = aligned_alloc(64, aligned_bytes);
+
+        // Zero out memory (for lists of pointers)
+        memset(ptr, 0, aligned_bytes);
+
+        switch (type) {
+            case KI: z->I = (int64_t*)ptr; break;
+            case KF: z->F = (double*)ptr;  break;
+            case KS: z->S = (char**)ptr;   break;
+            case KK: z->k = (K**)ptr;      break;
+            case XD: z->k = (K**)ptr;      break;
+            default: break; 
+        }
     }
 
-    // if (type == KI) z->I = new int64_t[len];
-    // else if (type == KF) z->F = new double[len];
+    return z;
+}
 
+// Create Dictionary (xD)
+// A Dict is physically a generic list (KK) of 2 items: [Keys, Values]
+K* xD(K* keys, K* values) {
+    if (keys->n != values->n) return nullptr;
+
+    K* z = ktn(XD, 2); 
+    // Note: z->k is already allocated by ktn(XD, 2) above
+    
+    z->k[0] = keys;    // Index 0: Keys
+    z->k[1] = values;  // Index 1: Values
+    return z;
+}
+
+// Create Table (xT)
+// A Table is just a wrapper pointing to a Dictionary
+K* xT(K* dict) {
+    if (dict->t != XD) return nullptr;
+    
+    // We manually allocate xT because it doesn't need a buffer, just a pointer
+    void* memory = pool.alloc(sizeof(K));
+    K* z = new(memory) K();
+    z->t = XT;
+    z->n = 1;
+    z->r = 0;
+    z->k0 = dict;   // Point to the dictionary
     return z;
 }
 
 // Destructor: Recursively free memory
 void r0(K* k) {
     if (!k) return;
-    if (k->t == KI) delete[] k->I;
-    if (k->t == KF) delete[] k->F;
+
+    if (k->t == XT) {
+        r0(k->k0);  // Free the underlying dictionary
+                    // Do NOT free k->k0's buffer, r0(dict) will do that
+    } else if (k->t == XD || k->t == KK) {
+        // Free every item in the list
+        for (int i = 0; i < k->n; ++i) {
+            r0(k->k[i]);
+        }
+    }
+
+    // Free payload buffer
+    if (k->n > 0) {
+        if (k->t == KI) free(k->I);
+        else if (k->t == KF) free(k->F);
+        else if (k->t == KS) free(k->S);
+        else if (k->t == KK) free(k->k);
+        else if (k->t == XD) free(k->k);
+    }
     
     // Do not call k itself since we use arena allocator
     // Supposed to be leaked memory
@@ -46,11 +95,33 @@ void r0(K* k) {
 
 // Utility: Print K object
 void show(K* k) {
+    if (!k) { std::cout << "(null)\n"; return; }
+
     if (k->t == KI) {
-        std::cout << "type: " << (int)k->t << ", len: " << k->n << " | [ ";
+        std::cout << "[ ";
+        for (int i = 0; i < k->n; ++i) std::cout << k->I[i] << " ";
+        std::cout << "] (int)" << std::endl;
+    } else if (k->t == KF) {
+        std::cout << "[ ";
+        for (int i = 0; i < k->n; ++i) std::cout << k->F[i] << " ";
+        std::cout << "] (float)" << std::endl;
+    } else if (k->t == KS) {
+        std::cout << "[ ";
+        for (int i = 0; i < k->n; ++i) std::cout << "`" << (k->S[i] ? k->S[i] : "null") << " ";
+        std::cout << "] (sym)" << std::endl;
+    } else if (k->t == KK || k->t == 0) { 
+        std::cout << "( " << std::endl;
         for (int i = 0; i < k->n; ++i) {
-            std::cout << k->I[i] << " ";
-        } 
-        std::cout << "]" << std::endl;
+            std::cout << "  ";
+            show(k->k[i]); // Recurse
+        }
+        std::cout << ")" << std::endl;
+    } else if (k->t == XT) {
+        std::cout << "+Table" << std::endl;
+        show(k->k0); // Recursively show dict
+    } else if (k->t == XD) {
+        std::cout << "Dictionary:" << std::endl;
+        std::cout << "  Keys: "; show(k->k[0]);
+        std::cout << "  Vals: "; show(k->k[1]);
     }
 }

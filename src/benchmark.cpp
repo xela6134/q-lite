@@ -13,7 +13,8 @@ using namespace std::chrono;
 #define DURATION(start, end) duration_cast<microseconds>(end - start).count()
 
 int main() {
-    int32_t N = 50000000; // 50 Million rows (~400 MB)
+    int32_t N = 50000000;   // 50 Million rows (~400 MB)
+                            // Also performs well with smaller sizes under STREAM_THRESHOLD defined in ops/math.cpp
 
     // Benchmark 1: std::vector addition (time: 50939 us)
     {
@@ -87,7 +88,7 @@ int main() {
 
     std::cout << std::endl;
 
-    // Benchmark 6: Standard C++ heap (time: 21587 us)
+    // Benchmark 6: Standard C++ heap (time: 22271 us)
     {
         std::vector<K*> v; 
         v.reserve(N);
@@ -107,7 +108,7 @@ int main() {
         for (K* k : v) delete k; 
     }
 
-    // Benchmark 7: Custom memory pool (time: 2167 us)
+    // Benchmark 7: Custom memory pool (time: 1971 us)
     {
         std::vector<K*> v;
         v.reserve(N);
