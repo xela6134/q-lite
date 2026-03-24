@@ -1,15 +1,10 @@
 #pragma once
 #include <cstddef>
 #include <vector>
-#include <cstdlib>
 #include <iostream>
+#include <sys/mman.h> // Required for mmap, munmap
+#include <unistd.h>   // Required for getting OS page size
 
-/**
- * Simple area allocator, big chunk of memory we can use
- * Advantage: 64-bit CPU alignment guaranteed
- * Tradeoff: More internal fragmentation for memory
- * NOT a static heap-free memory allocator
- */
 class MemoryPool {
     struct Block {
         char* data;
@@ -19,7 +14,9 @@ class MemoryPool {
     
     std::vector<Block> blocks;
     size_t current_block_idx = -1;
-    const size_t BLOCK_SIZE = 1024 * 1024; // 1MB chunk
+    
+    // 2MB pages for mmap (skip 4th level)
+    const size_t BLOCK_SIZE = 2 * 1024 * 1024; 
 
 public:
     MemoryPool() {
@@ -27,36 +24,45 @@ public:
     }
 
     ~MemoryPool() {
-        for (auto& b : blocks) free(b.data);
+        for (auto& b : blocks) {
+            munmap(b.data, b.size);
+        }
     }
 
-    void allocate_new_block() {
-        char* ptr = (char*) malloc(BLOCK_SIZE);
-        blocks.push_back({ptr, BLOCK_SIZE, 0});
+    void allocate_new_block(size_t required_size = 0) {
+        size_t alloc_size = BLOCK_SIZE;
+        
+        if (required_size > alloc_size) {
+            alloc_size = (required_size + BLOCK_SIZE - 1) & ~(BLOCK_SIZE - 1);
+        }
+
+        void* ptr = mmap(nullptr, alloc_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+        
+        if (ptr == MAP_FAILED) {
+            std::cerr << "CRITICAL: mmap failed to allocate " << alloc_size << " bytes" << std::endl;
+            exit(EXIT_FAILURE);
+        }
+
+        blocks.push_back({(char*)ptr, alloc_size, 0});
         ++current_block_idx;
     }
 
-    void* alloc(size_t size) {
-        // Add padding every single time to ensure 8-byte alignment (64-bit systems)
-        // e.g. [char] [ ] [ ] [ ] [ ] [ ] [ ] [ ] -> 1 byte char, 7 bytes padding
+    void* alloc(size_t size, size_t alignment = 8) {
         size_t current_addr = (size_t)(blocks[current_block_idx].data + blocks[current_block_idx].used);
-        size_t padding = (0 - current_addr) & 7; // modulo 8 operation
+        size_t padding = (0 - current_addr) & (alignment - 1); 
 
-        // Check capacity including the padding we need to skip
-        if (blocks[current_block_idx].used + padding + size > BLOCK_SIZE) {
-            allocate_new_block();
-            padding = 0; 
+        if (blocks[current_block_idx].used + padding + size > blocks[current_block_idx].size) {
+            allocate_new_block(padding + size); 
+            
+            current_addr = (size_t)(blocks[current_block_idx].data);
+            padding = (0 - current_addr) & (alignment - 1);
         }
 
-        // Move the pointer past padding
         char* ptr = blocks[current_block_idx].data + blocks[current_block_idx].used + padding;
-        
-        // Update usage
         blocks[current_block_idx].used += (padding + size);
         
         return (void*)ptr;
     }
 };
 
-// Global instance
 inline MemoryPool pool;

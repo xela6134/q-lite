@@ -6,23 +6,19 @@
 // K To Number (length)
 // Allocates contiguous memory: [K Struct] -> [Raw Data]
 K* ktn(int8_t type, int32_t len) {
-    // 1. Allocate the Header (from Pool)
-    void* memory = pool.alloc(sizeof(K));
+    void* memory = pool.alloc(sizeof(K), 8);
     K* z = new(memory) K();
     z->t = type;
     z->n = len;
     z->r = 0;
 
-    // Calculate payload size
-    size_t bytes = len * 8;
+    size_t element_size = 8;
+    size_t bytes = len * element_size;
     size_t aligned_bytes = (bytes + 63) & ~63;
 
-    // Allocate aligned payload
     if (len > 0) {
-        // Use aligned_alloc for EVERYTHING to guarantee cache-line alignment
-        void* ptr = aligned_alloc(64, aligned_bytes);
+        void* ptr = pool.alloc(aligned_bytes, 64);
 
-        // Zero out memory (for lists of pointers)
         memset(ptr, 0, aligned_bytes);
 
         switch (type) {
@@ -71,26 +67,13 @@ void r0(K* k) {
     if (!k) return;
 
     if (k->t == XT) {
-        r0(k->k0);  // Free the underlying dictionary
-                    // Do NOT free k->k0's buffer, r0(dict) will do that
+        r0(k->k0); 
     } else if (k->t == XD || k->t == KK) {
-        // Free every item in the list
         for (int i = 0; i < k->n; ++i) {
             r0(k->k[i]);
         }
     }
 
-    // Free payload buffer
-    if (k->n > 0) {
-        if (k->t == KI) free(k->I);
-        else if (k->t == KF) free(k->F);
-        else if (k->t == KS) free(k->S);
-        else if (k->t == KK) free(k->k);
-        else if (k->t == XD) free(k->k);
-    }
-    
-    // Do not call k itself since we use arena allocator
-    // Supposed to be leaked memory
 }
 
 // Utility: Print K object
