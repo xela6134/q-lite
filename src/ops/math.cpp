@@ -24,6 +24,9 @@ void add_I(int64_t* __restrict res, const __restrict int64_t* a, const __restric
     if (n > STREAM_THRESHOLD) {
         // Big data (streaming stores)
         for (; i <= n - 4; i += 4) {
+            _mm_prefetch(&a[i + 32], _MM_HINT_T0);  // 8 iterations ahead
+            _mm_prefetch(&b[i + 32], _MM_HINT_T0);
+
             __m256i va = _mm256_load_si256((__m256i const*)&a[i]);
             __m256i vb = _mm256_load_si256((__m256i const*)&b[i]);
             __m256i vres = _mm256_add_epi64(va, vb);

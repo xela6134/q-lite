@@ -50,9 +50,11 @@ public:
     }
 
     void* alloc(size_t size, size_t alignment = 8) {
+        // current starting address
         size_t current_addr = (size_t)(blocks[current_block_idx].data + blocks[current_block_idx].used);
         size_t padding = (0 - current_addr) & (alignment - 1); 
 
+        // overflowed?
         if (blocks[current_block_idx].used + padding + size > blocks[current_block_idx].size) {
             allocate_new_block(padding + size); 
 

@@ -41,7 +41,7 @@ K* xD(K* keys, K* values) {
 
     K* z = ktn(XD, 2); 
     // Note: z->k is already allocated by ktn(XD, 2) above
-    
+
     z->k[0] = keys;    // Index 0: Keys
     z->k[1] = values;  // Index 1: Values
     return z;
