@@ -1,5 +1,5 @@
 #include <new>
-#include <cstdlib> // For aligned_alloc, free
+#include <cstdlib>
 #include "../memory/pool.hpp"
 #include "types.hpp"
 
@@ -7,7 +7,7 @@
 // Allocates contiguous memory: [K Struct] -> [Raw Data]
 K* ktn(int8_t type, int32_t len) {
     void* memory = pool.alloc(sizeof(K), 8);
-    K* z = new(memory) K();
+    K* z = new(memory) K(); // placement new
     z->t = type;
     z->n = len;
     z->r = 0;
