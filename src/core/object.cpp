@@ -14,6 +14,9 @@ K* ktn(int8_t type, int32_t len) {
 
     size_t element_size = 8;
     size_t bytes = len * element_size;
+
+    if (len < 0) return nullptr;
+
     size_t aligned_bytes = (bytes + 63) & ~63;
 
     if (len > 0) {
@@ -51,12 +54,21 @@ K* xD(K* keys, K* values) {
 // A Table is just a wrapper pointing to a Dictionary
 K* xT(K* dict) {
     if (dict->t != XD) return nullptr;
-    
+
+    // Verify all columns have equal length
+    K* vals = dict->k[1];
+    if (vals->t == KK && vals->n > 1) {
+        int32_t row_count = vals->k[0]->n;
+        for (int32_t i = 1; i < vals->n; ++i) {
+            if (vals->k[i]->n != row_count) return nullptr;
+        }
+    }
+
     // We manually allocate xT because it doesn't need a buffer, just a pointer
     void* memory = pool.alloc(sizeof(K));
     K* z = new(memory) K();
     z->t = XT;
-    z->n = 1;
+    z->n = dict->k[1]->k[0]->n;
     z->r = 0;
     z->k0 = dict;   // Point to the dictionary
     return z;
@@ -83,27 +95,27 @@ void show(K* k) {
     if (k->t == KI) {
         std::cout << "[ ";
         for (int i = 0; i < k->n; ++i) std::cout << k->I[i] << " ";
-        std::cout << "] (int)" << std::endl;
+        std::cout << "] (int)" << '\n';
     } else if (k->t == KF) {
         std::cout << "[ ";
         for (int i = 0; i < k->n; ++i) std::cout << k->F[i] << " ";
-        std::cout << "] (float)" << std::endl;
+        std::cout << "] (float)" << '\n';
     } else if (k->t == KS) {
         std::cout << "[ ";
         for (int i = 0; i < k->n; ++i) std::cout << "`" << (k->S[i] ? k->S[i] : "null") << " ";
-        std::cout << "] (sym)" << std::endl;
+        std::cout << "] (sym)" << '\n';
     } else if (k->t == KK || k->t == 0) { 
-        std::cout << "( " << std::endl;
+        std::cout << "( " << '\n';
         for (int i = 0; i < k->n; ++i) {
             std::cout << "  ";
             show(k->k[i]); // Recurse
         }
-        std::cout << ")" << std::endl;
+        std::cout << ")" << '\n';
     } else if (k->t == XT) {
-        std::cout << "+Table" << std::endl;
+        std::cout << "+Table" << '\n';
         show(k->k0); // Recursively show dict
     } else if (k->t == XD) {
-        std::cout << "Dictionary:" << std::endl;
+        std::cout << "Dictionary:" << '\n';
         std::cout << "  Keys: "; show(k->k[0]);
         std::cout << "  Vals: "; show(k->k[1]);
     }

@@ -6,12 +6,6 @@ add_library(qlite_core
     engine/groupby.cpp
 )
 
-add_library(qlite_lib STATIC
-    core/object.cpp
-    ops/math.cpp
-    engine/groupby.cpp
-)
-
 target_include_directories(qlite_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_executable(qlite main.cpp)
@@ -23,5 +17,3 @@ target_link_libraries(qlite PRIVATE qlite_core)
 target_link_libraries(vectorised PRIVATE qlite_core)
 target_link_libraries(benchmark PRIVATE qlite_core)
 target_link_libraries(tabledict PRIVATE qlite_core)
-
-add_library(qlite_core ALIAS qlite_lib)

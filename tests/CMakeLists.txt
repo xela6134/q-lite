@@ -9,7 +9,7 @@ add_executable(unit_tests
 target_link_libraries(unit_tests 
     PRIVATE 
     gtest_main
-    qlite_lib
+    qlite_core
 )
 
 target_compile_features(unit_tests PUBLIC cxx_std_20)
