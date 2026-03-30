@@ -108,7 +108,7 @@ int main() {
         for (K* k : v) delete k; 
     }
 
-    // Benchmark 7: Custom memory pool (time: 1971 us)
+    // Benchmark 7: Custom memory pool (time: 2971 us)
     {
         std::vector<K*> v;
         v.reserve(N);
