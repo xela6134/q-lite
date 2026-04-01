@@ -6,7 +6,7 @@ A C++20 vectorised, column-oriented database engine inspired by kdb+. Designed f
 
 | Metric | q-lite Implementation | Standard STL | Improvement |
 | --- | --- | --- | --- |
-| **Object Allocation** | Bump/Arena Allocator | `new` / `malloc` | **~1200% Faster** |
+| **Object Allocation** | Bump/Arena Allocator | `new` / `malloc` | **~700% Faster** |
 | **Aggregation** | Custom Hash Map | `std::unordered_map` | **~300% Faster** |
 | **Math Ops** | AVX2 Vectorised Kernels | `std::vector` | **~50% Faster** |
 
@@ -66,14 +66,10 @@ ctest
 
 **Goals**
 
-- Dictionary
-- Table
-- Use `mmap`
-
-**Stretch Goals**
-
-- Make it into a REPL (with Q)
-- `asof` join (time-series join)
+- Make more arithmetic operations
+- `asof` join
+- Make it into a real reusable REPL (with Q) -> after compilers
+- mmap file systems
 
 | time | sym | price | size | 
 | :--- | :--- | :--- | :--- | 
